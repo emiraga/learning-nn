@@ -59,7 +59,7 @@ class Value:
     
     def __pow__(self, other):
         assert isinstance(other, (int, float))
-        out = Value(self.data ** other, (self), '**')
+        out = Value(self.data ** other, (self, ), '**')
         def _backward():
             self.grad += other * self.data ** (other - 1) * out.grad
         out._backward = _backward
