@@ -12,21 +12,76 @@ def f(x):
 # plt.show()
 
 class Value:
-    def __init__(self, data, _children=(), _op='') -> None:
+    def __init__(self, data, _children=(), _op='', label = '') -> None:
         self.data = float(data)
         self._prev = set(_children)
+        self._backward = lambda: None
         self._op = _op
         self.grad = 0.0
+        self.label = label
     
     def __repr__(self) -> str:
         return f"Value({self.data})"
 
     def __add__(self, other):
-        return Value(self.data + other.data, (self, other), '+')
-    
-    def __mul__(self, other):
-        return Value(self.data * other.data, (self, other), '*')
+        out = Value(self.data + other.data, (self, other), '+')
+        def _backward():
+            self.grad += out.grad
+            other.grad += out.grad
+        out._backward = _backward
+        return out
 
+    def __mul__(self, other):
+        out = Value(self.data * other.data, (self, other), '*')
+        def _backward():
+            self.grad += other.data * out.grad
+            other.grad += self.data * out.grad
+        out._backward = _backward
+        return out
+
+    def __neg__(self):
+        out = Value(-self.data, (self,), '-')
+        def _backward():
+            self.grad += -out.grad
+        out._backward = _backward
+        return out
+
+    def __sub__(self, other):
+        return self + (-other)
+    
+    def __rmul__(self, other):
+        return self * other
+    
+    def tanh(self):
+        out = Value(math.tanh(self.data), (self,), 'tanh')
+        def _backward():
+            self.grad += (1 - out.data**2) * out.grad
+        out._backward = _backward
+        return out
+
+    def exp(self):
+        out = Value(math.exp(self.data), (self,), 'exp')
+        def _backward():
+            self.grad += out.data * out.grad
+        out._backward = _backward
+        return out
+
+    def backward(self):
+        # topological order all of the children in the graph
+        topo = []
+        visited = set()
+        def build_topo(v):
+            if v not in visited:
+                visited.add(v)
+                for child in v._prev:
+                    build_topo(child)
+                topo.append(v)
+        build_topo(self)
+
+        # go one variable at a time and apply the chain rule to get its gradient
+        self.grad = 1
+        for v in reversed(topo):
+            v._backward()
 
 def trace(root):
     nodes, edges = set(), set()
@@ -49,7 +104,7 @@ def draw_dot(root, format='svg', rankdir='LR'):
     dot = Digraph(format=format, graph_attr={'rankdir': rankdir}) #, node_attr={'rankdir': 'TB'})
     
     for n in nodes:
-        dot.node(name=str(id(n)), label = "{ data %.4f | grad %.4f }" % (n.data, n.grad), shape='record')
+        dot.node(name=str(id(n)), label = "{ %s | data %.4f | grad %.4f }" % (n.label, n.data, n.grad), shape='record')
         if n._op:
             dot.node(name=str(id(n)) + n._op, label=n._op)
             dot.edge(str(id(n)) + n._op, str(id(n)))
@@ -61,9 +116,11 @@ def draw_dot(root, format='svg', rankdir='LR'):
 
 
 if __name__ == "__main__":
-    a = Value(3.0)
-    b = Value(-4.0)
-    c = Value(5.0)
-    d = a * b + c
-    dot = draw_dot(d)
-    dot.render('graph.gv', view=False)
+    a = Value(3.0, label='a')
+    b = Value(-4.0, label='b')
+    c = Value(5.0, label='c')
+    d = a * b + c; d.label = 'd'
+    f = Value(-2.0, label='f')
+    L = d * f; L.label = 'L'
+    L.backward()
+    draw_dot(L).render('graph.gv', view=False)
