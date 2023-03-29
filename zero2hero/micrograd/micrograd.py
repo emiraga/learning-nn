@@ -24,6 +24,7 @@ class Value:
         return f"Value({self.data})"
 
     def __add__(self, other):
+        other = other if isinstance(other, Value) else Value(other)
         out = Value(self.data + other.data, (self, other), '+')
         def _backward():
             self.grad += out.grad
@@ -32,6 +33,7 @@ class Value:
         return out
 
     def __mul__(self, other):
+        other = other if isinstance(other, Value) else Value(other)
         out = Value(self.data * other.data, (self, other), '*')
         def _backward():
             self.grad += other.data * out.grad
@@ -52,6 +54,17 @@ class Value:
     def __rmul__(self, other):
         return self * other
     
+    def __radd__(self, other):
+        return self + other
+    
+    def __pow__(self, other):
+        assert isinstance(other, (int, float))
+        out = Value(self.data ** other, (self), '**')
+        def _backward():
+            self.grad += other * self.data ** (other - 1) * out.grad
+        out._backward = _backward
+        return out
+
     def tanh(self):
         out = Value(math.tanh(self.data), (self,), 'tanh')
         def _backward():
@@ -121,6 +134,7 @@ if __name__ == "__main__":
     c = Value(5.0, label='c')
     d = a * b + c; d.label = 'd'
     f = Value(-2.0, label='f')
-    L = d * f; L.label = 'L'
-    L.backward()
-    draw_dot(L).render('graph.gv', view=False)
+    L = d * f - 15; L.label = 'L'
+    K = L.exp(); K.label = 'K'
+    K.backward()
+    draw_dot(K).render('graph.gv', view=False)
