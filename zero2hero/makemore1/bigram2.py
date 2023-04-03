@@ -27,12 +27,13 @@ for word in words:
 
 g = torch.Generator().manual_seed(2147483647)
 for i in range(5):
-  out = []
-  ix = 0
-  while True:
-    p = N[ix].float()
-    ix = int(torch.multinomial(p, num_samples=1, replacement=True, generator=g).item())
-    out.append(i2s[ix])
-    if ix == 0:
-      break
-  print(''.join(out))
+    out = []
+    ix = 0
+    while True:
+        p = N[ix].float()
+        ix = int(torch.multinomial(p, num_samples=1, replacement=True, generator=g).item())
+        if ix == 0:
+            break
+        else:
+            out.append(i2s[ix])
+    print(''.join(out))
