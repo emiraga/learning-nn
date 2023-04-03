@@ -23,7 +23,9 @@ for word in words:
 #         plt.text(j, i, str(N[i, j].item()), ha="center", va="top", color='gray', fontdict={"size": 6})
 # plt.axis('off')
 # plt.show()
-P = N.float()
+
+# +1 for model smoothing
+P = (N+1).float()
 P /= P.sum(1, keepdim=True)
 print(P)
 
@@ -44,6 +46,7 @@ for i in range(5):
     print(''.join(out))
 
 neg_log_likelihood = 0.0
+n = 0
 for word in words[:3]:
     chs = ['.'] + list(word) + ['.']
     for ch1, ch2 in zip(chs, chs[1:]):
@@ -51,5 +54,7 @@ for word in words[:3]:
         ix2 = s2i[ch2]
         prob = P[ix1, ix2]
         neg_log_likelihood -= torch.log(prob)
+        n += 1
         print(f'{ch1},{ch2} = {prob:.4f}')
-print(neg_log_likelihood)
+# Average NLL
+print(neg_log_likelihood / n)
