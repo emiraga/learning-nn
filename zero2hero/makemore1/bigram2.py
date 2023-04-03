@@ -23,14 +23,19 @@ for word in words:
 #         plt.text(j, i, str(N[i, j].item()), ha="center", va="top", color='gray', fontdict={"size": 6})
 # plt.axis('off')
 # plt.show()
-
+P = N.float()
+P /= P.sum(1, keepdim=True)
+print(P)
 
 g = torch.Generator().manual_seed(2147483647)
 for i in range(5):
     out = []
     ix = 0
     while True:
-        p = N[ix].float()
+        # p = torch.ones(len(allChars))
+        # p = N[ix].float()
+        # p = p / p.sum()
+        p = P[ix]
         ix = int(torch.multinomial(p, num_samples=1, replacement=True, generator=g).item())
         if ix == 0:
             break
