@@ -42,3 +42,14 @@ for i in range(5):
         else:
             out.append(i2s[ix])
     print(''.join(out))
+
+neg_log_likelihood = 0.0
+for word in words[:3]:
+    chs = ['.'] + list(word) + ['.']
+    for ch1, ch2 in zip(chs, chs[1:]):
+        ix1 = s2i[ch1]
+        ix2 = s2i[ch2]
+        prob = P[ix1, ix2]
+        neg_log_likelihood -= torch.log(prob)
+        print(f'{ch1},{ch2} = {prob:.4f}')
+print(neg_log_likelihood)
