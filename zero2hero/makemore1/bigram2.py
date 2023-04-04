@@ -7,7 +7,7 @@ import torch
 allChars = '.' + string.ascii_lowercase
 s2i = {ch: i for i, ch in enumerate(allChars)}
 i2s = {i: ch for i, ch in enumerate(allChars)}
-N = torch.zeros((28, 28), dtype=torch.int32)
+N = torch.zeros((len(allChars), len(allChars)), dtype=torch.int32)
 words = open('names.txt', 'r').read().splitlines()
 for word in words:
     chs = ['.'] + list(word) + ['.']
