@@ -6,6 +6,11 @@ Learning Neural Networks from various sources and I will document and track my p
 * https://github.com/karpathy/nn-zero-to-hero
 * https://karpathy.ai/zero-to-hero.html
 
+## Lesson 2. GPT in 60 Lines of NumPy
+* https://jaykmody.com/blog/gpt-from-scratch/#setup
+* https://news.ycombinator.com/item?id=34726115
+
+
 # Advice from GTP-4
 
 > what should be my learning path, to be able to eventually understand how to make GPT or to understand how they work?
